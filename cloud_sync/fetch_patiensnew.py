@@ -13,7 +13,7 @@ from googleapiclient.http import MediaIoBaseDownload
 # CONFIG
 # =========================
 
-SPREADSHEET_ID = "11NcgmPJXgap8wBcH1jxZ_AKes4o3kDphVZdwa68Ijsc"
+SPREADSHEET_ID = "1KASonwhtkhsHENAscW13kBxDBhaLRfMfDjZke6YBb3I"
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 PATIENT_JSON_PATH = os.path.join(BASE_DIR, "data", "patients", "patients.json")
@@ -93,7 +93,7 @@ existing_names = {p["full_name"] for p in existing_patients}
 for raw_row in rows:
     row = clean_row(raw_row)
 
-    full_name = row.get("Patient full name", "").strip()
+    full_name = row.get("Patient Full Name", "").strip()
     if not full_name or full_name in existing_names:
         continue
 
@@ -126,24 +126,10 @@ for raw_row in rows:
     # -------- Save patient record --------
     # Extract medication times for all 5 doses
     medication_times = []
-    for dose_num in range(1, 6):
-        # Try multiple column name variations
-        possible_keys = [
-            f"Medication time  [Dose {dose_num}]",  # Double space
-            f"Medication time [Dose {dose_num}]",   # Single space
-            f"Medication time[Dose {dose_num}]",    # No space
-            f"Medication time  [Dose {dose_num}]",  # With extra spaces
-        ]
-        
-        dose_time = ""
-        for key in possible_keys:
-            if key in row:
-                dose_time = row.get(key, "").strip()
-                if dose_time:
-                    break
-        
-        if dose_time:
-            medication_times.append(dose_time)
+    for i in range(1, 6):
+        t = row.get(f"Dose {i} Time", "").strip()
+        if t:
+            medication_times.append(t)
     
     # Debug: Print all column names and medication times found
     if full_name:
@@ -155,12 +141,13 @@ for raw_row in rows:
         "patient_id": patient_id,
         "timestamp": row.get("Timestamp", ""),
         "full_name": full_name,
+        "age": int(row.get("Enter Age", 0)),
         "patient_photo": row.get("Patient Photo", ""),
-        "medical_condition": row.get("Primary Medical Condition", ""),
+        "medical_condition": row.get("Medical Condition", "").split(", "),
         "medication_times": medication_times,
         "health_check_frequency": row.get("Health Check Frequency", ""),
         "emergency_contact": row.get("Emergency contact number", ""),
-        "special_notes": row.get("Special Notes for AI", ""),
+        "special_notes": row.get("Add Special Notes for AI", ""),
         "active": True
     }
 

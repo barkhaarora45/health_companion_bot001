@@ -11,7 +11,7 @@ from deepface import DeepFace
 # CONFIGURATION
 # ==============================
 
-EMBEDDINGS_PATH = r"D:\robot_system\vision\embeddings.json"
+EMBEDDINGS_PATH = r"/Volumes/Macintosh/sahay/health_companion_bot001/vision/embeddings.json"
 
 MODEL_NAME = "ArcFace"
 
@@ -110,7 +110,12 @@ def emit_patient_id(patient_id):
 # CAMERA
 # ==============================
 
-cap = cv2.VideoCapture(1, cv2.CAP_DSHOW)
+# This is specifically for mac
+cap = cv2.VideoCapture(0, cv2.CAP_AVFOUNDATION)
+if not cap.isOpened():
+    print("[ERROR] Could not open camera. Check permissions or camera index.")
+    exit(1)
+
 print("[INFO] Face recognition running. Press Q to quit.")
 
 # ==============================

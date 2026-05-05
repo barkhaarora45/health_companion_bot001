@@ -4,9 +4,9 @@ import json
 from datetime import datetime
 
 # --- CONFIG ---
-SHEET_NAME = "HCB"
-OUTPUT_JSON = r"D:\robot_system\data\patients\patients.json"
-SYNC_LOG = r"D:\robot_system\data\patients\last_sync.txt"
+SHEET_NAME = "Health Companion Robot (Responses)"
+OUTPUT_JSON = r"/Volumes/Macintosh/sahay/health_companion_bot001/data/patients/patients.json"
+SYNC_LOG = r"/Volumes/Macintosh/sahay/health_companion_bot001/data/patients/last_sync.txt"
 
 # --- AUTH ---
 scope = [
@@ -15,7 +15,7 @@ scope = [
 ]
 
 creds = ServiceAccountCredentials.from_json_keyfile_name(
-    r"D:\robot_system\credentials\service_account.json",
+    r"/Volumes/Macintosh/sahay/health_companion_bot001/credentials/service_account.json",
     scope
 )
 client = gspread.authorize(creds)
@@ -26,18 +26,33 @@ rows = sheet.get_all_records()
 
 patients = []
 
-for row in rows:
+for idx, row in enumerate(rows):
+    # Collect dose times (skip empty ones)
+    dose_times = []
+    for i in range(1, 6):
+        time = row.get(f"Dose {i} Time")
+        if time:
+            dose_times.append(time)
+
     patient = {
-        "patient_id": row["Patient ID"],
-        "name": row["Patient Name"],
-        "age": int(row["Age"]),
-        "language": "en" if row["Language"] == "English" else "hi",
-        "medicine": {
-            "name": row["Medicine Name"],
-            "time": row["Medicine Time"],
-            "count": int(row["Medicine Count"])
-        },
-        "checkup_time": row["Checkup Time"],
+        "patient_id": f"PAT_{idx+1}",
+
+        "name": row.get("Patient Full Name"),
+
+        "age": int(row.get("Enter Age", 0)),
+
+        "photo": row.get("Patient Photo"),
+
+        "conditions": row.get("Medical Condition"),
+
+        "medication_times": dose_times,
+
+        "check_frequency": row.get("Health Check Frequency"),
+
+        "emergency_contact": row.get("Emergency contact number"),
+
+        "notes": row.get("Add Special Notes for AI"),
+
         "active": True
     }
     patients.append(patient)
